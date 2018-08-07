@@ -22,6 +22,7 @@
 */
 
 namespace Test\User;
+use Test\Traits\PasswordTrait;
 
 /**
  * Class DatabaseTest
@@ -29,6 +30,8 @@ namespace Test\User;
  * @group DB
  */
 class DatabaseTest extends BackendTestCase {
+	use PasswordTrait;
+
 	/** @var array */
 	private $users;
 
@@ -57,7 +60,7 @@ class DatabaseTest extends BackendTestCase {
 	 * Tests that a \OC\User\ArgumentNotSetException is thrown when the supplied password is empty.
 	 *
 	 * @param string $password
-	 * @dataProvider emptyPasswordDataProvider
+	 * @dataProvider providesEmptyPasswordData
 	 * @expectedException \OC\User\ArgumentNotSetException
 	 * @expectedExceptionMessage Password cannot be empty
 	 */
@@ -65,17 +68,6 @@ class DatabaseTest extends BackendTestCase {
 		$user1 = $this->getUser();
 		$this->backend->createUser($this->getUser(), 'pw');
 		$this->backend->setPassword($user1, $password);
-	}
-
-	public function emptyPasswordDataProvider() {
-		return [
-			[''],
-			[0],
-			[null],
-			[false],
-			[FALSE],
-			[NULL],
-		];
 	}
 
 	public function testCreateUserInvalidatesCache() {
