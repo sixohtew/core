@@ -251,7 +251,7 @@ class User implements IUser {
 	}
 
 	/**
-	 * Set the password of the user
+	 * Set the user's password
 	 *
 	 * @param string $password
 	 * @param string $recoveryPassword for the encryption app to reset encryption keys
