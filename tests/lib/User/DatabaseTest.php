@@ -3,6 +3,7 @@
 * ownCloud
 *
 * @author Robin Appelman
+* @author Matthew Setter <matthew@matthewsetter.com>
 * @copyright Copyright (c) 2012 Robin Appelman icewind@owncloud.com
 *
 * This library is free software; you can redistribute it and/or
@@ -39,7 +40,7 @@ class DatabaseTest extends BackendTestCase {
 
 	protected function setUp() {
 		parent::setUp();
-		$this->backend=new \OC\User\Database();
+		$this->backend = new \OC\User\Database();
 	}
 
 	protected function tearDown() {
@@ -50,6 +51,31 @@ class DatabaseTest extends BackendTestCase {
 			$this->backend->deleteUser($user);
 		}
 		parent::tearDown();
+	}
+
+	/**
+	 * Tests that a \OC\User\ArgumentNotSetException is thrown when the supplied password is empty.
+	 *
+	 * @param string $password
+	 * @dataProvider emptyPasswordDataProvider
+	 * @expectedException \OC\User\ArgumentNotSetException
+	 * @expectedExceptionMessage Password cannot be empty
+	 */
+	public function testCannotSetEmptyPassword($password) {
+		$user1 = $this->getUser();
+		$this->backend->createUser($this->getUser(), 'pw');
+		$this->backend->setPassword($user1, $password);
+	}
+
+	public function emptyPasswordDataProvider() {
+		return [
+			[''],
+			[0],
+			[null],
+			[false],
+			[FALSE],
+			[NULL],
+		];
 	}
 
 	public function testCreateUserInvalidatesCache() {
