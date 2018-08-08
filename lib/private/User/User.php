@@ -33,6 +33,7 @@ namespace OC\User;
 
 use OC\Files\Cache\Storage;
 use OC\Hooks\Emitter;
+use OC\Traits\EmptyStringTrait;
 use OC_Helper;
 use OCP\Events\EventEmitterTrait;
 use OCP\IAvatarManager;
@@ -47,7 +48,8 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 class User implements IUser {
-	use EventEmitterTrait;
+	use EventEmitterTrait, EmptyStringTrait;
+
 	/** @var Account */
 	private $account;
 
@@ -259,7 +261,7 @@ class User implements IUser {
 	 * @throws ArgumentNotSetException
 	 */
 	public function setPassword($password, $recoveryPassword = null) {
-		if (empty($password)) {
+		if ($this->isEmpty($password)) {
 			throw new ArgumentNotSetException('Password cannot be empty');
 		}
 

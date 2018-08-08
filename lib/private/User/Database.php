@@ -52,6 +52,7 @@
 namespace OC\User;
 
 use OC\Cache\CappedMemoryCache;
+use OC\Traits\EmptyStringTrait;
 use OCP\IUserBackend;
 use OCP\User\IProvidesDisplayNameBackend;
 use OCP\User\IProvidesEMailBackend;
@@ -62,6 +63,8 @@ use OCP\Util;
  * Class for user management in a SQL Database (e.g. MySQL, SQLite)
  */
 class Database extends Backend implements IUserBackend, IProvidesHomeBackend, IProvidesDisplayNameBackend {
+	use EmptyStringTrait;
+
 	/** @var CappedMemoryCache */
 	private $cache;
 
@@ -127,7 +130,7 @@ class Database extends Backend implements IUserBackend, IProvidesHomeBackend, IP
 	 * @throws ArgumentNotSetException
 	 */
 	public function setPassword($uid, $password) {
-		if (empty($password)) {
+		if ($this->isEmpty($password)) {
 			throw new ArgumentNotSetException('Password cannot be empty');
 		}
 
