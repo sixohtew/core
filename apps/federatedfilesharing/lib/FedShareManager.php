@@ -126,6 +126,10 @@ class FedShareManager {
 								$sharedBy,
 								$token
 	) {
+		// TODO:
+		// 1. put these equilibristics back into the controller
+		// 2. Pass an address instance here
+		//
 		if ($ownerFederatedId === null) {
 			$ownerFederatedId = $owner . '@' . $this->addressHandler->normalizeRemote($remote);
 		}
