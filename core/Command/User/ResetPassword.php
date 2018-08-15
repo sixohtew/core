@@ -7,6 +7,7 @@
  * @author Laurens Post <lkpost@scept.re>
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Sujith Haridasan <sharidasan@owncloud.com>
  *
  * @copyright Copyright (c) 2018, ownCloud GmbH
  * @license AGPL-3.0
@@ -27,7 +28,16 @@
 
 namespace OC\Core\Command\User;
 
+use OC\Helper\EnvironmentHelper;
+use OCP\AppFramework\Http\TemplateResponse;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
+use OCP\IL10N;
+use OCP\IURLGenerator;
 use OCP\IUserManager;
+use OCP\Mail\IMailer;
+use OCP\Security\ISecureRandom;
+use OCP\Util;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -39,9 +49,41 @@ class ResetPassword extends Command {
 
 	/** @var IUserManager */
 	protected $userManager;
+	/** @var \OC_Defaults  */
+	private $defaults;
+	/** @var IURLGenerator  */
+	private $urlgenerator;
+	/** @var IConfig  */
+	private $config;
+	/** @var IMailer  */
+	private $mailer;
+	/** @var ISecureRandom  */
+	private $secureRandom;
+	/** @var ITimeFactory  */
+	private $timeFactory;
+	/** @var IL10N  */
+	private $l10n;
+	/** @var EnvironmentHelper  */
+	private $environmentHelper;
 
-	public function __construct(IUserManager $userManager) {
+	public function __construct(IUserManager $userManager,
+								\OC_Defaults $defaults,
+								IURLGenerator $urlgenerator,
+								IConfig $config,
+								IMailer $mailer,
+								ISecureRandom $secureRandom,
+								ITimeFactory $timeFactory,
+								IL10N $l10n,
+								EnvironmentHelper $environmentHelper) {
 		$this->userManager = $userManager;
+		$this->defaults = $defaults;
+		$this->urlgenerator = $urlgenerator;
+		$this->config = $config;
+		$this->mailer = $mailer;
+		$this->secureRandom = $secureRandom;
+		$this->timeFactory = $timeFactory;
+		$this->l10n = $l10n;
+		$this->environmentHelper = $environmentHelper;
 		parent::__construct();
 	}
 
@@ -60,11 +102,25 @@ class ResetPassword extends Command {
 				InputOption::VALUE_NONE,
 				'Read the password from the OC_PASS environment variable.'
 			)
+			->addOption(
+				'via-email',
+				null,
+				InputOption::VALUE_NONE,
+				'The email-id set while creating the user, will be used to send link for password reset. This option will also display the link sent to user.'
+			)
+			->addOption(
+				'via-link',
+				null,
+				InputOption::VALUE_NONE,
+				'The link to reset the password will be displayed.'
+			)
 		;
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$username = $input->getArgument('user');
+		$emailLink = $input->getOption('via-email');
+		$displayLink = $input->getOption('via-link');
 
 		/** @var $user \OCP\IUser */
 		$user = $this->userManager->get($username);
@@ -74,11 +130,54 @@ class ResetPassword extends Command {
 		}
 
 		if ($input->getOption('password-from-env')) {
-			$password = \getenv('OC_PASS');
+			$password = $this->environmentHelper->getEnvVar('OC_PASS');
 			if (!$password) {
 				$output->writeln('<error>--password-from-env given, but OC_PASS is empty!</error>');
 				return 1;
 			}
+		} elseif ($emailLink) {
+			if ($user->getEMailAddress() !== null) {
+				$userId = $user->getUID();
+				$token = $this->secureRandom->generate(21,
+					ISecureRandom::CHAR_DIGITS,
+					ISecureRandom::CHAR_LOWER, ISecureRandom::CHAR_UPPER);
+				$this->config->setUserValue($user->getUID(), 'owncloud',
+					'lostpassword', $this->timeFactory->getTime() . ':' . $token);
+
+				$mailData = [
+					'link' => $this->urlgenerator->linkToRouteAbsolute('core.lost.resetform', ['userId' => $userId, 'token' => $token])
+				];
+
+				$mail = new TemplateResponse('core', 'lostpassword/email', $mailData, 'blank');
+				$mailContent = $mail->render();
+
+				$subject = $this->l10n->t('Your password is reset');
+				try {
+					$message = $this->mailer->createMessage();
+					$message->setTo([$user->getEMailAddress() => $userId]);
+					$message->setSubject($subject);
+					$message->setHtmlBody($mailContent);
+					$message->setFrom([Util::getDefaultEmailAddress('no-reply') => $this->defaults->getName()]);
+					$this->mailer->send($message);
+					$output->writeln('The password reset link is: ' . $mailData['link']);
+					return 0;
+				} catch (\Exception $e) {
+					$output->writeln('<error>Can\'t send new user mail to ' . $user->getEMailAddress() . ': ' . $e->getMessage());
+					return 1;
+				}
+			} else {
+				$output->writeln('<error>Email address is not set for the user ' . $user->getUID() . '</error>');
+				return 1;
+			}
+		} elseif ($displayLink) {
+			$token = $this->secureRandom->generate(21,
+				ISecureRandom::CHAR_DIGITS,
+				ISecureRandom::CHAR_LOWER, ISecureRandom::CHAR_UPPER);
+			$this->config->setUserValue($user->getUID(), 'owncloud',
+				'lostpassword', $this->timeFactory->getTime() . ':' . $token);
+			$link = $this->urlgenerator->linkToRouteAbsolute('core.lost.resetform', ['userId' => $user->getUID(), 'token' => $token]);
+			$output->writeln('The password reset link is: ' . $link);
+			return 0;
 		} elseif ($input->isInteractive()) {
 			/** @var $dialog \Symfony\Component\Console\Helper\QuestionHelper */
 			$dialog = $this->getHelperSet()->get('question');
@@ -88,7 +187,7 @@ class ResetPassword extends Command {
 					'<error>Warning: Resetting the password when using encryption will result in data loss!</error>'
 				);
 				if (!$dialog->ask($input, $output, new Question('<question>Do you want to continue?</question>', true))) {
-					return 1;
+					return 0;
 				}
 			}
 

@@ -145,7 +145,9 @@ if (\OC::$server->getConfig()->getSystemValue('installed', false)) {
 	$application->add(new OC\Core\Command\User\ListUsers(\OC::$server->getUserManager()));
 	$application->add(new OC\Core\Command\User\ListUserGroups(\OC::$server->getUserManager(), \OC::$server->getGroupManager()));
 	$application->add(new OC\Core\Command\User\Report(\OC::$server->getUserManager()));
-	$application->add(new OC\Core\Command\User\ResetPassword(\OC::$server->getUserManager()));
+	$application->add(new OC\Core\Command\User\ResetPassword(\OC::$server->getUserManager(), new \OC_Defaults(), \OC::$server->getURLGenerator(),
+		\OC::$server->getConfig(), \OC::$server->getMailer(), \OC::$server->getSecureRandom(), \OC::$server->getTimeFactory(),
+		\OC::$server->getL10N('core'), new \OC\Helper\EnvironmentHelper()));
 	$application->add(new OC\Core\Command\User\Setting(\OC::$server->getUserManager(), \OC::$server->getConfig(), \OC::$server->getDatabaseConnection()));
 	$application->add(new OC\Core\Command\User\Modify(\OC::$server->getUserManager(), \OC::$server->getMailer()));
 	$application->add(new OC\Core\Command\User\SyncBackend(\OC::$server->getAccountMapper(), \OC::$server->getConfig(), \OC::$server->getUserManager(), \OC::$server->getLogger()));
