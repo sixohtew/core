@@ -84,7 +84,7 @@ class ConfigAdapter implements IMountProvider {
 	private function prepareStorageConfig(IStorageConfig &$storage, IUser $user) {
 		foreach ($storage->getBackendOptions() as $option => $value) {
 			$storage->setBackendOption($option, $this->setUserVars(
-				$user->getUID(), $value
+				$user->getUserName(), $value
 			));
 		}
 
@@ -205,9 +205,6 @@ class ConfigAdapter implements IMountProvider {
 	 * @return string
 	 */
 	private function setUserVars($user, $input) {
-		if ($this->session->exists('altloginname')) {
-			$user = $this->session->get('altloginname');
-		}
 		if (\is_array($input)) {
 			foreach ($input as $key => $value) {
 				if (\is_string($value)) {
