@@ -8,6 +8,7 @@ Feature: copy file
     Given using OCS API version "1"
     And user "user0" has been created
 
+  @smokeTest
   Scenario Outline: Copying a file
     Given using <dav_version> DAV path
     When user "user0" copies file "/welcome.txt" to "/FOLDER/welcome.txt" using the WebDAV API

@@ -1,6 +1,7 @@
 @api
 Feature: tags
-  
+
+  @smokeTest
   Scenario Outline: Creating a normal tag as regular user should work
     Given user "user0" has been created
     When user "user0" creates a "normal" tag with name "<tag_name>" using the WebDAV API
@@ -27,6 +28,7 @@ Feature: tags
     Then the HTTP status code should be "400"
     And tag "JustARegularTagName" should not exist for "admin"
 
+  @smokeTest
   Scenario: Creating a not user-assignable tag with groups as admin should work
     Given user "user0" has been created
     When user "admin" creates a "not user-assignable" tag with name "TagWithGroups" and groups "group1|group2" using the WebDAV API
@@ -39,6 +41,7 @@ Feature: tags
     Then the HTTP status code should be "400"
     And tag "JustARegularTagName" should not exist for "user0"
 
+  @smokeTest
   Scenario Outline: Renaming a normal tag as regular user should work
     Given user "user0" has been created
     And user "admin" has created a "normal" tag with name "<tag_name>"
@@ -77,6 +80,7 @@ Feature: tags
     When user "user0" edits the tag with name "TagWithGroups" and sets its groups to "group1|group3" using the WebDAV API
     Then the "not user-assignable" tag with name "TagWithGroups" should have the groups "group1|group2"
 
+  @smokeTest
   Scenario: Deleting a normal tag as regular user should work
     Given user "user0" has been created
     And user "admin" has created a "normal" tag with name "JustARegularTagName"
@@ -112,6 +116,7 @@ Feature: tags
     Then the HTTP status code should be "204"
     And tag "JustARegularTagName" should not exist for "admin"
 
+  @smokeTest
   Scenario: Assigning a normal tag to a file shared by someone else as regular user should work
     Given user "user0" has been created
     And user "user1" has been created
@@ -209,6 +214,7 @@ Feature: tags
       | MyFirstTag  | normal              |
       | MySecondTag | not user-assignable |
 
+  @smokeTest
   Scenario: Unassigning a normal tag from a file shared by someone else as regular user should work
     Given user "user0" has been created
     And user "user1" has been created

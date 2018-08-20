@@ -7,6 +7,13 @@ So that I can more easily manage access to resources by groups rather than indiv
 	Background:
 		Given using OCS API version "1"
 
+	@smokeTest
+	Scenario: admin creates a group
+		When the administrator sends a group creation request for group "simplegroup" using the provisioning API
+		Then the OCS status code should be "100"
+		And the HTTP status code should be "200"
+		And group "simplegroup" should exist
+
 	Scenario Outline: admin creates a group
 		When the administrator sends a group creation request for group "<group_id>" using the provisioning API
 		Then the OCS status code should be "100"

@@ -12,6 +12,13 @@ So that I can organise my data structure
 		And the user has logged in with username "user1" and password "1234" using the webUI
 		And the user has browsed to the files page
 
+	@smoteTest
+	Scenario: Rename a file using special characters
+		When the user renames the file "lorem.txt" to "lorem-renamed.txt" using the webUI
+		Then the file "lorem-renamed.txt" should be listed on the webUI
+		When the user reloads the current page of the webUI
+		Then the file "lorem-renamed.txt" should be listed on the webUI
+
 	Scenario Outline: Rename a file using special characters
 		When the user renames the file "lorem.txt" to <to_file_name> using the webUI
 		Then the file <to_file_name> should be listed on the webUI

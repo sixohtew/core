@@ -3,6 +3,7 @@ Feature: Comments
   Background:
     Given using new DAV path
 
+  @smokeTest
   Scenario: Creating a comment on a file belonging to myself
     Given user "user0" has been created
     And user "user0" has uploaded file "data/textfile.txt" to "/myFileToComment.txt"
@@ -22,6 +23,7 @@ Feature: Comments
       | user1 | A comment from sharee |
       | user0 | A comment from sharer |
 
+  @smokeTest
   Scenario: Deleting my own comments on a file belonging to myself
     Given user "user0" has been created
     And user "user0" has uploaded file "data/textfile.txt" to "/myFileToComment.txt"
@@ -55,6 +57,7 @@ Feature: Comments
     Then the HTTP status code should be "204"
     And user "user1" should have 1 comments on file "/myFileToComment.txt"
 
+  @smokeTest
   Scenario: Edit my own comments on a file belonging to myself
     Given user "user0" has been created
     And user "user0" has uploaded file "data/textfile.txt" to "/myFileToComment.txt"
@@ -88,6 +91,7 @@ Feature: Comments
     And user "user0" should have the following comments on file "/myFileToComment.txt"
       | user1 | Sharee comment |
 
+  @smokeTest
   Scenario: Getting info of comments using files endpoint
     Given user "user0" has been created
     And user "user0" has uploaded file "data/textfile.txt" to "/myFileToComment.txt"

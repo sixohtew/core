@@ -11,6 +11,7 @@ Feature: upload file using new chunking
     And the owncloud log level has been set to debug
     And the owncloud log has been cleared
 
+  @smokeTest
   Scenario: Upload chunked file asc with new chunking
     When user "user0" uploads the following chunks to "/myChunkedFile.txt" with new chunking and using the WebDAV API
       | 1 | AAAAA |

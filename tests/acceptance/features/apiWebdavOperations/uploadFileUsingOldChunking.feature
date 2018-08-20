@@ -9,6 +9,7 @@ Feature: upload file using old chunking
     And using old DAV path
     And user "user0" has been created
 
+  @smokeTest
   Scenario: Upload chunked file asc
     When user "user0" uploads the following "3" chunks to "/myChunkedFile.txt" with old chunking and using the WebDAV API
       | 1 | AAAAA |

@@ -7,6 +7,17 @@ So that I can manage user access to group resources
 	Background:
 		Given using OCS API version "2"
 
+	@smokeTest
+	Scenario: admin removes a user from a group
+		Given user "brand-new-user" has been created
+		And group "simplegroup" has been created
+		And user "brand-new-user" has been added to group "simplegroup"
+		When user "admin" sends HTTP method "DELETE" to OCS API endpoint "/cloud/users/brand-new-user/groups" with body
+			| groupid | simplegroup |
+		Then the OCS status code should be "100"
+		And the HTTP status code should be "200" 
+		And user "brand-new-user" should not belong to group "simplegroup"
+
 	Scenario Outline: admin removes a user from a group
 		Given user "brand-new-user" has been created
 		And group "<group_id>" has been created
@@ -46,6 +57,7 @@ So that I can manage user access to group resources
 		And the HTTP status code should be "400"
 		And the API should not return any data
 
+	@smokeTest
 	Scenario: a subadmin can remove users from groups the subadmin is responsible for
 		Given user "subadmin" has been created
 		And user "brand-new-user" has been created
